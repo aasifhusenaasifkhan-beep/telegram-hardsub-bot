@@ -1,7 +1,7 @@
 import os
 import ffmpeg
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import Bot
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 VIDEO_DIR = "videos/"
 if not os.path.exists(VIDEO_DIR):
@@ -10,32 +10,35 @@ if not os.path.exists(VIDEO_DIR):
 user_state = {}
 user_video = {}
 
-def start(update, context):
-    update.message.reply_text("Send a video, then use /hardsub")
+# ---------------- Handlers ---------------- #
 
-def save_video(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Send a video, then use /hardsub")
+
+async def save_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     file = update.message.video or update.message.document
 
     if file is None:
-        return update.message.reply_text("Send a valid video")
+        await update.message.reply_text("Send a valid video")
+        return
 
     video_path = f"{VIDEO_DIR}{user_id}.mp4"
-    file.get_file().download(video_path)
+    await file.get_file().download_to_drive(video_path)
     user_video[user_id] = video_path
 
-    update.message.reply_text("Video saved ✔️\nNow reply /hardsub")
+    await update.message.reply_text("Video saved ✔️\nNow reply /hardsub")
 
-def hardsub_cmd(update, context):
+async def hardsub_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-
     if user_id not in user_video:
-        return update.message.reply_text("Pehle video bhejo!")
+        await update.message.reply_text("Pehle video bhejo!")
+        return
 
     user_state[user_id] = "WAIT_SUB"
-    update.message.reply_text("Now send .ass subtitle file")
+    await update.message.reply_text("Now send .ass subtitle file")
 
-def subtitle_received(update, context):
+async def subtitle_received(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
 
     if user_state.get(user_id) != "WAIT_SUB":
@@ -43,12 +46,13 @@ def subtitle_received(update, context):
 
     file = update.message.document
     if not file.file_name.endswith(".ass"):
-        return update.message.reply_text("Send .ass subtitle only")
+        await update.message.reply_text("Send .ass subtitle only")
+        return
 
     sub_path = f"{VIDEO_DIR}{user_id}.ass"
-    file.get_file().download(sub_path)
+    await file.get_file().download_to_drive(sub_path)
 
-    update.message.reply_text("Hardsubbing... ⏳")
+    await update.message.reply_text("Hardsubbing... ⏳")
 
     input_video = user_video[user_id]
     output_path = f"{VIDEO_DIR}hardsub_{user_id}.mp4"
@@ -61,26 +65,27 @@ def subtitle_received(update, context):
             acodec='copy'
         ).run(overwrite_output=True)
 
-        update.message.reply_video(video=open(output_path, "rb"))
+        await update.message.reply_video(video=open(output_path, "rb"))
     except Exception as e:
-        update.message.reply_text(f"Error: {e}")
+        await update.message.reply_text(f"Error: {e}")
 
     user_state.pop(user_id, None)
     user_video.pop(user_id, None)
 
+# ---------------- Main ---------------- #
+
 def main():
     TOKEN = os.environ.get("BOT_TOKEN")
+    app = ApplicationBuilder().token(TOKEN).build()
 
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    # Handlers
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("hardsub", hardsub_cmd))
+    app.add_handler(MessageHandler(filters.VIDEO | filters.Document.VIDEO, save_video))
+    app.add_handler(MessageHandler(filters.Document.ALL, subtitle_received))
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("hardsub", hardsub_cmd))
-    dp.add_handler(MessageHandler(Filters.video | Filters.document.video, save_video))
-    dp.add_handler(MessageHandler(Filters.document, subtitle_received))
-
-    updater.start_polling()
-    updater.idle()
+    print("Bot is running...")
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
