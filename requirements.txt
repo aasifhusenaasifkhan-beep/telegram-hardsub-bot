@@ -1,4 +1,1 @@
-pyrogram
-tgcrypto
-ffmpeg-python
-pysubs2
+python-telegram-bot==20.7
