@@ -1,4 +1,4 @@
-herepyrogram
+pyrogram
 tgcrypto
 ffmpeg-python
 pysubs2
