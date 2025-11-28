@@ -1,4 +1,4 @@
-Enterimport os
+import os
 import ffmpeg
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import Bot
