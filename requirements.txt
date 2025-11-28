@@ -4,4 +4,4 @@ ffmpeg-python
 aiofilespython-telegram-bot==20.8
 pysubs2
 ffmpeg-python
-aiofiles
+aiffiles
