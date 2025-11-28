@@ -1,3 +1,4 @@
-herepyrogram==2.0.106
+herepyrogram
 tgcrypto
 ffmpeg-python
+pysubs2
