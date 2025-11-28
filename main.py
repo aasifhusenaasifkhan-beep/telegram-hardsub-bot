@@ -60,7 +60,8 @@ async def receive_subtitle(client, message: Message):
     except Exception as e:
         await status_msg.edit(f"Error: {str(e)}")
 
-app.run()import os
+app.run()
+import os
 import asyncio
 import ffmpeg
 import pysubs2
