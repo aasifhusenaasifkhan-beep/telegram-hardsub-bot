@@ -1,7 +1,4 @@
-python-telegram-bot==20.8
-pysubs2
-ffmpeg-python
-aiofilespython-telegram-bot==20.8
-pysubs2
+pyrogram==2.0.106
+tgcrypto
 ffmpeg-python
 aiffiles
