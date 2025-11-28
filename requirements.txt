@@ -1,5 +1,11 @@
-python-telegram-bot==20.7
+python-telegram-bot==13.14
+ffmpeg-python
 pyrogram
 tgcrypto
-ffmpeg-python
 pysubs2
+anyio
+httpx
+certifi
+future
+h11
+pyaes
