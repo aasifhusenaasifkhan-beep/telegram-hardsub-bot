@@ -9,3 +9,4 @@ certifi
 future
 h11
 pyaes
+aiohttp
