@@ -1,12 +1,2 @@
-python-telegram-bot==20.3
-ffmpeg-python
 pyrogram
-tgcrypto
-pysubs2
-anyio
-httpx
-certifi
-future
-h11
-pyaes
-aiofiles
+TgCrypto
